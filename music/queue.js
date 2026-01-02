@@ -10,6 +10,7 @@ class Queue {
     create(guildId) {
         const queue = {
             songs: [],
+            history: [],
             nowPlaying: null,
             volume: 100,
             filters: {},

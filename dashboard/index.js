@@ -210,6 +210,15 @@ module.exports = (client) => {
     app.get('/api/music/status', (req, res) => {
         const queues = client.queueManager ? client.queueManager.getAll() : new Map();
 
+        const getCover = (info) => {
+            if (info.sourceName === 'youtube' || info.uri.includes('youtube')) {
+                return `https://img.youtube.com/vi/${info.identifier}/maxresdefault.jpg`;
+            } else if (info.artworkUrl) {
+                return info.artworkUrl;
+            }
+            return 'https://i.imgur.com/2ce2t5e.png';
+        };
+
         let musicData = {
             connected: !!client.lavalink,
             isPlaying: false,
@@ -270,7 +279,8 @@ module.exports = (client) => {
                 musicData.queue = queue.songs.map(song => ({
                     title: song.info.title,
                     author: song.info.author,
-                    uri: song.info.uri
+                    uri: song.info.uri,
+                    cover: getCover(song.info)
                 }));
                 musicData.queueCount = queue.songs.length;
                 break;
@@ -313,6 +323,50 @@ module.exports = (client) => {
             res.json({ success: false, message: error.message });
         }
     });
+
+    app.post('/api/music/skip', async (req, res) => {
+        try {
+            const queues = client.queueManager ? client.queueManager.getAll() : new Map();
+            for (const [guildId, queue] of queues) {
+                if (queue.nowPlaying) {
+                    const nextSong = client.queueManager.getNext(guildId);
+
+                    if (!nextSong) {
+                        if (client.lavalink) await client.lavalink.destroyPlayer(guildId);
+                        client.queueManager.delete(guildId);
+                    } else {
+                        if (queue.nowPlaying) queue.history.push(queue.nowPlaying);
+                        queue.nowPlaying = nextSong;
+                        queue.position = 0;
+                        queue.lastUpdate = Date.now();
+                        await client.lavalink.updatePlayer(guildId, nextSong, client.voiceStates[guildId] || {});
+                    }
+                    return res.json({ success: true });
+                }
+            }
+            res.json({ success: false, message: 'No music playing' });
+        } catch (e) { console.error(e); res.json({ success: false }); }
+    });
+
+    app.post('/api/music/previous', async (req, res) => {
+        try {
+            const queues = client.queueManager ? client.queueManager.getAll() : new Map();
+            for (const [guildId, queue] of queues) {
+                if (queue.nowPlaying && queue.history.length > 0) {
+                    const prev = queue.history.pop();
+                    queue.songs.unshift(queue.nowPlaying);
+                    queue.nowPlaying = prev;
+                    queue.position = 0;
+                    queue.lastUpdate = Date.now();
+                    await client.lavalink.updatePlayer(guildId, prev, client.voiceStates[guildId] || {});
+                    return res.json({ success: true });
+                }
+            }
+            res.json({ success: false, message: 'No previous song' });
+        } catch (e) { console.error(e); res.json({ success: false }); }
+    });
+
+
 
     app.listen(port, () => {
         console.log(`Dashboard is running on http://localhost:${port}`);

@@ -17,14 +17,12 @@
             padding-bottom: 100px;
         }
 
-        /* Layout Grid */
         .music-grid {
             display: grid;
             grid-template-columns: 1fr 350px;
             gap: 30px;
         }
 
-        /* Player Card */
         .player-card {
             background: rgba(19, 19, 26, 0.7);
             backdrop-filter: blur(20px);
@@ -42,7 +40,6 @@
             overflow: hidden;
         }
 
-        /* Guild Badge */
         .guild-badge {
             position: absolute;
             top: 20px;
@@ -50,9 +47,10 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            background: rgba(0, 0, 0, 0.4);
+            background: rgba(0, 0, 0, 0.6);
             padding: 8px 15px;
             border-radius: 30px;
+            border: 1px solid transparent;
         }
 
         .guild-icon {
@@ -74,7 +72,6 @@
             margin-left: 5px;
         }
 
-        /* Album Art */
         .art-wrapper {
             width: 280px;
             height: 280px;
@@ -96,7 +93,6 @@
             box-shadow: 0 15px 50px rgba(138, 43, 226, 0.4);
         }
 
-        /* Track Info */
         .track-title {
             font-size: 2rem;
             font-weight: 700;
@@ -117,7 +113,6 @@
             font-weight: 400;
         }
 
-        /* Progress Bar */
         .progress-wrapper {
             width: 100%;
             max-width: 500px;
@@ -136,8 +131,8 @@
 
         .progress-container {
             flex: 1;
-            height: 6px;
-            background: rgba(255, 255, 255, 0.1);
+            height: 8px;
+            background: #333;
             border-radius: 10px;
             position: relative;
             overflow: hidden;
@@ -145,26 +140,63 @@
 
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, var(--neon-purple), #a29bfe);
+            background: #8a2be2;
             width: 0%;
             border-radius: 10px;
             transition: width 0.5s linear;
-            box-shadow: 0 0 10px var(--neon-purple);
+            box-shadow: 0 0 15px #8a2be2;
         }
 
-        /* Controls */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-control {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            outline: none;
+            color: white;
+        }
+
+        .btn-control:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-control svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+
+        /* Previous: Blue */
+        .btn-prev {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-prev:hover {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+
+        /* Stop: Red */
         .btn-stop {
             background: rgba(255, 71, 87, 0.1);
             color: #ff4757;
             border: 1px solid rgba(255, 71, 87, 0.3);
-            padding: 12px 30px;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
         .btn-stop:hover {
@@ -173,7 +205,19 @@
             box-shadow: 0 5px 15px rgba(255, 71, 87, 0.4);
         }
 
-        /* Queue Side */
+        /* Skip: Green */
+        .btn-skip {
+            background: rgba(46, 204, 113, 0.1);
+            color: #2ecc71;
+            border: 1px solid rgba(46, 204, 113, 0.3);
+        }
+
+        .btn-skip:hover {
+            background: #2ecc71;
+            color: white;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+        }
+
         .queue-card {
             background: rgba(19, 19, 26, 0.8);
             border-radius: 20px;
@@ -217,11 +261,11 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
-        .q-number {
-            color: #555;
-            font-size: 0.8rem;
-            font-weight: bold;
-            width: 20px;
+        .q-img {
+            width: 45px;
+            height: 45px;
+            border-radius: 8px;
+            object-fit: cover;
         }
 
         .q-info {
@@ -243,39 +287,9 @@
             color: #777;
         }
 
-        /* Empty State */
-        .empty-state {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: #000;
-            z-index: 10;
-        }
-
-        .empty-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            opacity: 0.3;
-        }
-
-        .empty-text {
-            font-size: 1.2rem;
-            color: #555;
-        }
-
         @media(max-width: 900px) {
             .music-grid {
                 grid-template-columns: 1fr;
-            }
-
-            .queue-list {
-                max-height: 300px;
             }
         }
     </style>
@@ -283,21 +297,18 @@
 
 <body>
     <div class="music-container">
-
-        <div id="noMusicOverlay" class="empty-state" style="display: none;">
-            <div class="empty-icon">🎵</div>
-            <div class="empty-text">Nothing is playing right now.</div>
-            <div style="margin-top:10px; font-size:0.9rem; color:#444;">Join a voice channel and play some tunes!</div>
+        <div id="noMusicOverlay"
+            style="display: none; position:absolute; top:0; left:0; right:0; bottom:0; flex-direction:column; align-items:center; justify-content:center; padding-top:200px;">
+            <div style="font-size:3rem; opacity:0.3;">🎵</div>
+            <div style="color:#555;">No music playing</div>
         </div>
 
         <div class="music-grid" id="musicContent">
-
-            <!-- Main Player -->
             <div class="player-card">
                 <div class="guild-badge">
                     <img id="guildIcon" src="" class="guild-icon">
                     <div class="guild-info">
-                        <span id="guildName">Guild</span> • <span id="channelName" class="channel-name">#General</span>
+                        <span id="guildName">Guild</span> • <span id="channelName" class="channel-name">#Channel</span>
                     </div>
                 </div>
 
@@ -316,32 +327,42 @@
                     <div id="totalTime" class="time-text">0:00</div>
                 </div>
 
-                <button class="btn-stop" onclick="stopMusic()">
-                    ⏹ Stop Music
-                </button>
+                <div class="controls">
+                    <button class="btn-control btn-prev" onclick="prevSong()" title="Previous">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z" />
+                        </svg>
+                    </button>
+                    <button class="btn-control btn-stop" onclick="stopMusic()" title="Stop">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 6h12v12H6z" />
+                        </svg>
+                    </button>
+                    <button class="btn-control btn-skip" onclick="skipSong()" title="Skip">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
-            <!-- Queue -->
             <div class="queue-card">
                 <div class="queue-header">
                     <span>Up Next</span>
                     <span id="queueCount"
-                        style="background:var(--neon-purple); padding:2px 8px; border-radius:6px; font-size:0.8rem;">0</span>
+                        style="background:#8a2be2; padding:2px 8px; border-radius:6px; font-size:0.8rem;">0</span>
                 </div>
-                <div id="queueList" class="queue-list">
-                    <!-- Items -->
-                </div>
+                <div id="queueList" class="queue-list"></div>
             </div>
-
         </div>
-
     </div>
 
     <%- include('partials/super_button') %>
 
         <script>
             function formatTime(ms) {
-                const totalSeconds = Math.floor(ms / 1000);
+                if (isNaN(ms)) return '0:00';
+                const totalSeconds = Math.max(0, Math.floor(ms / 1000));
                 const minutes = Math.floor(totalSeconds / 60);
                 const seconds = totalSeconds % 60;
                 return `${minutes}:${seconds.toString().padStart(2, '0')}`;
@@ -354,41 +375,38 @@
 
                     if (!data.isPlaying || !data.nowPlaying) {
                         document.getElementById('noMusicOverlay').style.display = 'flex';
-                        document.getElementById('musicContent').style.opacity = '0.1'; // Fade out bg
+                        document.getElementById('musicContent').style.visibility = 'hidden';
                         return;
                     }
 
-                    // Hide empty state
                     document.getElementById('noMusicOverlay').style.display = 'none';
-                    document.getElementById('musicContent').style.opacity = '1';
+                    document.getElementById('musicContent').style.visibility = 'visible';
 
-                    // Update Info
                     document.getElementById('guildName').innerText = data.guildName;
-                    document.getElementById('channelName').innerText = data.channelName || 'Voice Channel';
+                    document.getElementById('channelName').innerText = data.channelName || 'Voice';
                     document.getElementById('guildIcon').src = data.guildIcon || 'https://cdn.discordapp.com/embed/avatars/0.png';
 
                     document.getElementById('trackTitle').innerText = data.nowPlaying.title;
                     document.getElementById('trackArtist').innerText = data.nowPlaying.author;
                     document.getElementById('trackCover').src = data.nowPlaying.cover;
 
-                    // Progress
-                    const percent = Math.min(100, (data.position / data.duration) * 100);
+                    const percent = data.duration ? Math.min(100, (data.position / data.duration) * 100) : 0;
                     document.getElementById('progressBar').style.width = percent + '%';
                     document.getElementById('currTime').innerText = formatTime(data.position);
                     document.getElementById('totalTime').innerText = formatTime(data.duration);
 
-                    // Queue
                     document.getElementById('queueCount').innerText = data.queueCount;
                     const list = document.getElementById('queueList');
                     list.innerHTML = '';
 
-                    if (data.queue.length === 0) {
-                        list.innerHTML = '<div style="text-align:center; color:#555; margin-top:50px;">Queue is empty</div>';
-                    } else {
+                    if (data.queue.length === 0) list.innerHTML = '<div style="text-align:center; color:#555; margin-top:20px;">Queue is empty</div>';
+                    else {
                         data.queue.forEach((song, i) => {
+                            const cover = song.cover || 'https://i.imgur.com/2ce2t5e.png';
                             list.innerHTML += `
                         <div class="queue-item">
-                            <div class="q-number">${i + 1}</div>
+                            <div style="font-weight:bold; width:20px; color:#555;">${i + 1}</div>
+                            <img src="${cover}" class="q-img">
                             <div class="q-info">
                                 <div class="q-title">${song.title}</div>
                                 <div class="q-author">${song.author}</div>
@@ -396,20 +414,14 @@
                         </div>`;
                         });
                     }
-
-                } catch (e) {
-                    console.error(e);
-                }
+                } catch (e) { }
             }
 
-            async function stopMusic() {
-                if (!confirm('Stop playback and disconnect?')) return;
-                await fetch('/api/music/stop', { method: 'POST' });
-                updateState(); // Refresh immediately
-            }
+            async function skipSong() { await fetch('/api/music/skip', { method: 'POST' }); updateState(); }
+            async function prevSong() { await fetch('/api/music/previous', { method: 'POST' }); updateState(); }
+            async function stopMusic() { if (confirm('Stop music?')) await fetch('/api/music/stop', { method: 'POST' }); updateState(); }
 
-            // Start polling
-            setInterval(updateState, 2000);
+            setInterval(updateState, 1000);
             updateState();
         </script>
 </body>

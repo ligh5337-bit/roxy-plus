@@ -116,6 +116,10 @@ if (client.lavalink) {
                 const queue = queueManager.get(evt.guildId);
                 if (!queue) return;
 
+                if (queue.nowPlaying) {
+                    queue.history.push(queue.nowPlaying);
+                }
+
                 const nextSong = queueManager.getNext(evt.guildId);
 
                 if (!nextSong) {
