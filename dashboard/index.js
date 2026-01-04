@@ -435,6 +435,86 @@ module.exports = (client) => {
         } catch (e) { console.error(e); res.json({ success: false, message: e.message }); }
     });
 
+    // --- SERVER CLONER ROUTES ---
+
+    // In-memory state for Cloner
+    const clonerState = {
+        isRunning: false,
+        logs: [],
+        sourceId: '',
+        targetId: '',
+        stats: {}
+    };
+
+    app.get('/server-cloner', (req, res) => {
+        if (!client.user) return res.send('Bot loading...');
+        res.render('server-cloner', {
+            user: client.user,
+            page: 'cloner'
+        });
+    });
+
+    app.get('/api/cloner/status', (req, res) => {
+        res.json({
+            isRunning: clonerState.isRunning,
+            logs: clonerState.logs,
+            stats: clonerState.stats
+        });
+    });
+
+    app.post('/api/cloner/fetch', async (req, res) => {
+        const { guildId } = req.body;
+        try {
+            const guild = client.guilds.cache.get(guildId);
+            if (!guild) return res.json({ success: false, message: 'Guild not found (Bot must be a member)' });
+
+            const member = await guild.members.fetch(client.user.id).catch(() => null);
+            const isAdmin = member ? member.permissions.has('ADMINISTRATOR') : false;
+
+            res.json({
+                success: true,
+                name: guild.name,
+                icon: guild.iconURL({ dynamic: true, size: 128 }),
+                isAdmin: isAdmin,
+                isOwner: guild.ownerId === client.user.id
+            });
+        } catch (e) { res.json({ success: false, message: e.message }); }
+    });
+
+    app.post('/api/cloner/start', async (req, res) => {
+        if (clonerState.isRunning) return res.json({ success: false, message: 'Already running' });
+
+        const { sourceId, targetId, options } = req.body;
+
+        clonerState.isRunning = true;
+        clonerState.logs = [];
+        clonerState.stats = {};
+        clonerState.sourceId = sourceId;
+        clonerState.targetId = targetId;
+
+        clonerState.logs.push(`[${new Date().toLocaleTimeString()}] Request received. Initializing...`);
+
+        const ServerCloner = require('../cloner/ServerCloner');
+        const cloner = new ServerCloner(client, (msg) => {
+            clonerState.logs.push(`[${new Date().toLocaleTimeString()}] ${msg}`);
+            if (clonerState.logs.length > 500) clonerState.logs.shift();
+        });
+
+        // Run in background
+        cloner.cloneServer(sourceId, targetId, options)
+            .then(stats => {
+                clonerState.stats = stats;
+                clonerState.isRunning = false;
+                clonerState.logs.push(`[${new Date().toLocaleTimeString()}] Process completed successfully.`);
+            })
+            .catch(err => {
+                clonerState.isRunning = false;
+                clonerState.logs.push(`[${new Date().toLocaleTimeString()}] Error: ${err.message}`);
+            });
+
+        res.json({ success: true });
+    });
+
     app.listen(port, () => {
         console.log(`Dashboard is running on http://localhost:${port}`);
     });
